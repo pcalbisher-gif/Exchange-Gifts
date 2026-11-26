@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Christmas Exchange Gifts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --desk: #fbe6d2;
+    --paper: #fffaf4;
+    --ink: #3a1d0a;
+    --ink-soft: #7a5538;
+    --red: #c75a0b;
+    --blue: #f28a30;
+    --kraft: #e3d2ae;
+    --line: #f2d3b8;
+    --type: "Special Elite", "Courier New", monospace;
+    --hand: "Caveat", "Segoe Script", "Bradley Hand", cursive;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --desk: #26130a;
+      --paper: #3a2112;
+      --ink: #ffeedd;
+      --ink-soft: #e0b896;
+      --red: #ff8a3d;
+      --blue: #ffa45c;
+      --kraft: #8f7d57;
+      --line: #6b4126;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-padding-top: 1rem; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--desk);
+    color: var(--ink);
+    font-family: var(--type);
+    line-height: 1.6;
+    padding: 2rem 1rem 4rem;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; }
+
+  /* Airmail border, used on the main letter and on every envelope */
+  .airmail {
+    padding: 10px;
+    background: repeating-linear-gradient(135deg,
+      var(--red) 0 16px, #fff 16px 24px, var(--blue) 24px 40px, #fff 40px 48px);
+    border-radius: 4px;
+    box-shadow: 0 10px 30px rgba(58, 29, 10, .22);
+  }
+  .sheet {
+    background: var(--paper);
+    border-radius: 2px;
+    padding: 2rem 1.75rem 2.25rem;
+  }
+
+  h1 {
+    font-family: var(--hand);
+    font-weight: 700;
+    font-size: clamp(2.6rem, 8vw, 4rem);
+    line-height: 1;
+    margin: 0 0 .25rem;
+    color: var(--red);
+  }
+  .sub { margin: 0 0 1.75rem; color: var(--ink-soft); max-width: 52ch; }
+
+  .meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+  }
+  label { display: block; font-size: .85rem; color: var(--ink-soft); margin-bottom: .2rem; }
+  input[type=text], input[type=date] {
+    width: 100%;
+    font: 500 1.5rem/1.2 var(--hand);
+    color: var(--ink);
+    background: transparent;
+    border: 0;
+    border-bottom: 2px dashed var(--line);
+    padding: .15rem .1rem;
+    border-radius: 0;
+  }
+  input:focus-visible, button:focus-visible {
+    outline: 3px solid var(--red);
+    outline-offset: 3px;
+  }
+  input::placeholder { color: var(--ink-soft); opacity: .55; }
+
+  .add { display: flex; gap: .75rem; align-items: flex-end; margin-bottom: 1rem; }
+  .add > div { flex: 1; }
+
+  button {
+    font: inherit;
+    cursor: pointer;
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    color: var(--ink);
+    padding: .5rem 1.1rem;
+    border-radius: 3px;
+    transition: transform .12s ease, background .12s ease;
+  }
+  button:hover { transform: translateY(-1px); }
+  button.primary { background: var(--red); border-color: var(--red); color: #fff; font-size: 1.05rem; padding: .7rem 1.5rem; }
+  button.primary:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+  button.quiet { border-color: transparent; text-decoration: underline; padding: .5rem .25rem; }
+
+  .names { list-style: none; margin: 0 0 1.5rem; padding: 0; display: flex; flex-wrap: wrap; gap: .5rem; min-height: 2.5rem; }
+  .names li {
+    display: inline-flex; align-items: center; gap: .4rem;
+    font: 500 1.45rem/1 var(--hand);
+    padding: .3rem .4rem .3rem .8rem;
+    border: 2px solid var(--line);
+    border-radius: 999px;
+  }
+  .names li button {
+    border: 0; padding: 0; width: 1.6rem; height: 1.6rem; line-height: 1;
+    border-radius: 50%; font-size: 1rem; background: var(--line); color: var(--ink);
+  }
+  .empty { color: var(--ink-soft); font-size: .95rem; }
+  .actions { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+  .hint { color: var(--ink-soft); font-size: .85rem; margin: 0; }
+  .error { color: var(--red); min-height: 1.4rem; margin: .5rem 0 0; font-size: .95rem; }
+
+  /* Envelopes */
+  #mailbox { margin-top: 2.5rem; }
+  #mailbox h2 { font-family: var(--hand); font-size: 2.4rem; margin: 0 0 .25rem; color: var(--red); }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.25rem;
+  }
+  .envelope {
+    all: unset;
+    cursor: pointer;
+    display: block;
+    transition: transform .15s ease;
+  }
+  .envelope:hover { transform: translateY(-3px) rotate(-.6deg); }
+  .envelope:focus-visible { outline: 3px solid var(--red); outline-offset: 4px; }
+  .envelope .airmail { padding: 7px; }
+  .face {
+    position: relative;
+    background: var(--kraft);
+    background-image: linear-gradient(160deg, rgba(255,255,255,.35), rgba(0,0,0,.05));
+    padding: 1.1rem 1rem 1.3rem;
+    min-height: 130px;
+    color: #2a2418;
+  }
+  .face small { font-size: .75rem; opacity: .75; }
+  .face .to { font: 700 1.9rem/1.1 var(--hand); margin-top: .3rem; padding-right: 3.2rem; word-break: break-word; }
+  .stamp {
+    position: absolute; top: .7rem; right: .7rem;
+    width: 2.7rem; height: 3.2rem;
+    border: 2px dashed rgba(42,36,24,.55);
+    display: grid; place-items: center;
+    font-size: 1.4rem;
+    background: rgba(255,255,255,.35);
+    transform: rotate(4deg);
+  }
+  .envelope.opened .face::after {
+    content: "opened";
+    position: absolute; bottom: .6rem; right: .8rem;
+    font-size: .75rem;
+    border: 2px solid var(--red); color: var(--red);
+    padding: 0 .4rem; transform: rotate(-8deg);
+    border-radius: 3px;
+  }
+
+  /* Letter dialog */
+  dialog {
+    border: 0; padding: 0; background: transparent;
+    max-width: min(520px, 94vw);
+    width: 100%;
+    color: var(--ink);
+  }
+  dialog::backdrop { background: rgba(30, 12, 2, .65); }
+  dialog[open] .airmail { animation: unfold .35s ease-out; }
+  @keyframes unfold {
+    from { transform: translateY(40px) scale(.94); opacity: 0; }
+    to { transform: none; opacity: 1; }
+  }
+  .letter {
+    background-color: var(--paper);
+    background-image: repeating-linear-gradient(transparent 0 35px, var(--line) 35px 36px);
+    padding: 1.5rem 1.5rem 1.75rem;
+    font: 500 1.7rem/36px var(--hand);
+    position: relative;
+  }
+  .letter p { margin: 0 0 36px; }
+  .letter .big {
+    display: block;
+    font: 700 clamp(2.4rem, 10vw, 3.4rem)/1.15 var(--hand);
+    color: var(--red);
+    margin: 0 0 36px;
+    word-break: break-word;
+  }
+  .letter .stamp { top: 1rem; right: 1rem; }
+  .letter .fine { font: 400 .85rem/1.5 var(--type); color: var(--ink-soft); margin: 0 0 1rem; }
+  .letter .row { display: flex; justify-content: flex-end; }
+
+  footer { margin-top: 3rem; text-align: center; color: var(--ink-soft); font-size: .8rem; }
+
+  @media (max-width: 520px) {
+    .sheet { padding: 1.5rem 1.1rem 1.75rem; }
+    .add { flex-direction: column; align-items: stretch; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<main class="wrap">
+
+  <div class="airmail">
+    <section class="sheet">
+      <h1>Christmas Exchange Gifts</h1>
+      <p class="sub">Type in everyone joining the Christmas exchange gift. Each person gets a sealed letter from Santa that tells them who they are giving a gift to. Nobody gets themselves.</p>
+
+      <div class="meta">
+        <div><label for="event">What's the occasion?</label><input id="event" type="text" placeholder="Christmas Exchange Gift" maxlength="40"></div>
+        <div><label for="date">Gift day</label><input id="date" type="date"></div>
+        <div><label for="budget">Budget</label><input id="budget" type="text" placeholder="₱300" maxlength="20"></div>
+      </div>
+
+      <form id="addForm" class="add" autocomplete="off">
+        <div>
+          <label for="nameInput">Add a name</label>
+          <input id="nameInput" type="text" placeholder="e.g. Maria" maxlength="30">
+        </div>
+        <button type="submit">Add name</button>
+      </form>
+
+      <ul id="names" class="names" aria-live="polite"></ul>
+      <p id="error" class="error" role="alert"></p>
+
+      <div class="actions">
+        <button id="drawBtn" class="primary" type="button" disabled>Send the letters</button>
+        <button id="clearBtn" class="quiet" type="button">Clear all names</button>
+        <p class="hint" id="countHint">Add at least 3 names.</p>
+      </div>
+    </section>
+  </div>
+
+  <section id="mailbox" class="hidden" aria-labelledby="mailTitle">
+    <h2 id="mailTitle">Your mailbox</h2>
+    <p class="sub" id="mailSub">Each person opens only their own envelope, then closes the letter before passing the screen on.</p>
+    <div id="grid" class="grid"></div>
+    <p style="margin-top:2rem"><button id="redoBtn" type="button">Draw again</button></p>
+  </section>
+
+  <footer>Maligayang Pasko! Runs fully in your browser.</footer>
+</main>
+
+<dialog id="letterDialog" aria-labelledby="letterTitle">
+  <div class="airmail">
+    <div class="letter">
+      <div class="stamp" aria-hidden="true">🎄</div>
+      <p id="letterTitle" style="padding-right:3.5rem">Dear <span id="lFrom"></span>,</p>
+      <p>Santa says: for <span id="lEvent"></span>, you will give a gift to</p>
+      <span class="big" id="lTo"></span>
+      <p id="lExtra" class="fine"></p>
+      <p class="fine">Keep it a secret until the gift day. Merry Christmas!</p>
+      <div class="row"><button id="closeLetter" class="primary" type="button">Seal it and pass on</button></div>
+    </div>
+  </div>
+</dialog>
+
+<script>
+(function () {
+  var KEY = "exchange-letters-v1";
+  var state = { names: [], event: "Christmas Exchange Gift", date: "", budget: "", pairs: null, opened: [] };
+
+  var $ = function (id) { return document.getElementById(id); };
+  var els = {
+    event: $("event"), date: $("date"), budget: $("budget"),
+    form: $("addForm"), nameInput: $("nameInput"), names: $("names"),
+    error: $("error"), draw: $("drawBtn"), clear: $("clearBtn"), count: $("countHint"),
+    mailbox: $("mailbox"), grid: $("grid"), redo: $("redoBtn"), mailSub: $("mailSub"),
+    dlg: $("letterDialog"), lFrom: $("lFrom"), lEvent: $("lEvent"), lTo: $("lTo"),
+    lExtra: $("lExtra"), close: $("closeLetter")
+  };
+
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) { var s = JSON.parse(raw); for (var k in state) if (k in s) state[k] = s[k]; }
+    } catch (e) { /* storage unavailable, keep defaults */ }
+  }
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+  }
+
+  function fmtDate(v) {
+    if (!v) return "";
+    var d = new Date(v + "T00:00:00");
+    return isNaN(d) ? "" : d.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+  }
+
+  function renderNames() {
+    els.names.innerHTML = "";
+    if (!state.names.length) {
+      var li = document.createElement("li");
+      li.className = "empty";
+      li.style.border = "0";
+      li.style.font = "inherit";
+      li.textContent = "No names yet. Add the first one above.";
+      els.names.appendChild(li);
+    }
+    state.names.forEach(function (n, i) {
+      var li = document.createElement("li");
+      var span = document.createElement("span");
+      span.textContent = n;
+      var b = document.createElement("button");
+      b.type = "button";
+      b.setAttribute("aria-label", "Remove " + n);
+      b.textContent = "×";
+      b.addEventListener("click", function () {
+        state.names.splice(i, 1);
+        state.pairs = null; state.opened = [];
+        save(); renderAll();
+      });
+      li.appendChild(span); li.appendChild(b);
+      els.names.appendChild(li);
+    });
+    var n = state.names.length;
+    els.draw.disabled = n < 3;
+    els.count.textContent = n < 3 ? "Add at least 3 names (" + n + " so far)." : n + " people are in.";
+  }
+
+  function renderMailbox() {
+    if (!state.pairs) { els.mailbox.classList.add("hidden"); return; }
+    els.mailbox.classList.remove("hidden");
+    els.grid.innerHTML = "";
+    var ev = state.event.trim() || "Christmas";
+    els.mailSub.textContent = "Letters for " + ev + ". Each person opens only their own envelope, then closes the letter before passing the screen on.";
+    state.pairs.forEach(function (p, i) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "envelope" + (state.opened.indexOf(i) > -1 ? " opened" : "");
+      btn.setAttribute("aria-label", "Open the letter for " + p.from);
+      btn.innerHTML =
+        '<div class="airmail"><div class="face">' +
+        '<div class="stamp" aria-hidden="true">🎄</div>' +
+        '<small>Letter for</small><div class="to"></div></div></div>';
+      btn.querySelector(".to").textContent = p.from;
+      btn.addEventListener("click", function () { openLetter(i); });
+      els.grid.appendChild(btn);
+    });
+  }
+
+  function renderAll() { renderNames(); renderMailbox(); }
+
+  // Shuffle, then give each person the next one in the circle.
+  // This guarantees nobody draws themselves and everyone is picked exactly once.
+  function drawPairs(names) {
+    var a = names.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a.map(function (name, i) { return { from: name, to: a[(i + 1) % a.length] }; });
+  }
+
+  function openLetter(i) {
+    var p = state.pairs[i];
+    els.lFrom.textContent = p.from;
+    els.lEvent.textContent = state.event.trim() || "Christmas";
+    els.lTo.textContent = p.to;
+    var extra = [];
+    if (state.budget.trim()) extra.push("Budget: " + state.budget.trim());
+    var d = fmtDate(state.date);
+    if (d) extra.push("Gift day: " + d);
+    els.lExtra.textContent = extra.join("   |   ");
+    els.lExtra.style.display = extra.length ? "" : "none";
+    if (state.opened.indexOf(i) === -1) { state.opened.push(i); save(); renderMailbox(); }
+    if (typeof els.dlg.showModal === "function") els.dlg.showModal(); else els.dlg.setAttribute("open", "");
+  }
+
+  function closeLetter() {
+    if (els.dlg.open) els.dlg.close();
+    els.lTo.textContent = ""; // clear the name from the page right away
+  }
+
+  // Events
+  els.form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var v = els.nameInput.value.replace(/\s+/g, " ").trim();
+    els.error.textContent = "";
+    if (!v) return;
+    var dup = state.names.some(function (n) { return n.toLowerCase() === v.toLowerCase(); });
+    if (dup) { els.error.textContent = v + " is already on the list. Add a last initial to tell them apart."; return; }
+    state.names.push(v);
+    state.pairs = null; state.opened = [];
+    els.nameInput.value = "";
+    els.nameInput.focus();
+    save(); renderAll();
+  });
+
+  els.draw.addEventListener("click", function () {
+    state.pairs = drawPairs(state.names);
+    state.opened = [];
+    save(); renderAll();
+    els.mailbox.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  els.redo.addEventListener("click", function () {
+    if (!confirm("Draw again? The current letters will be replaced.")) return;
+    state.pairs = drawPairs(state.names);
+    state.opened = [];
+    save(); renderAll();
+  });
+
+  els.clear.addEventListener("click", function () {
+    if (!state.names.length) return;
+    if (!confirm("Remove all names?")) return;
+    state.names = []; state.pairs = null; state.opened = [];
+    save(); renderAll();
+  });
+
+  ["event", "date", "budget"].forEach(function (k) {
+    els[k].addEventListener("input", function () { state[k] = els[k].value; save(); });
+  });
+
+  els.close.addEventListener("click", closeLetter);
+  els.dlg.addEventListener("close", function () { els.lTo.textContent = ""; });
+  els.dlg.addEventListener("click", function (e) { if (e.target === els.dlg) closeLetter(); });
+
+  load();
+  els.event.value = state.event; els.date.value = state.date; els.budget.value = state.budget;
+  renderAll();
+})();
+</script>
+</body>
+</html>
